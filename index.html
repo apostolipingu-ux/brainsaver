@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BrainVault - AI Knowledge Hub</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <!-- HEADER -->
+    <header>
+        <div class="logo">🧠 BrainVault</div>
+        <button class="btn btn-secondary btn-sm" onclick="showHome()">Home</button>
+    </header>
+
+    <!-- MAIN -->
+    <main>
+        <!-- HOME VIEW -->
+        <div id="homeView" class="view active">
+            <div class="welcome">
+                <h1>Welcome to BrainVault</h1>
+                <p style="color: #868e96; margin-bottom: 30px;">Capture everything. Organize it. Understand it with AI.</p>
+            </div>
+
+            <div class="quick-buttons">
+                <button class="quick-btn" onclick="openAddNoteModal()">
+                    <span>📝</span>
+                    <span>Add Note</span>
+                </button>
+                <button class="quick-btn" onclick="openAddLinkModal()">
+                    <span>🔗</span>
+                    <span>Add Link</span>
+                </button>
+                <button class="quick-btn" onclick="openUploadModal()">
+                    <span>📸</span>
+                    <span>Upload Media</span>
+                </button>
+                <button class="quick-btn" onclick="openVoiceModal()">
+                    <span>🎤</span>
+                    <span>Voice Note</span>
+                </button>
+                <button class="quick-btn" onclick="openCreateFolderModal()">
+                    <span>📁</span>
+                    <span>New Folder</span>
+                </button>
+            </div>
+
+            <div style="margin-bottom: 40px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2>Your Folders</h2>
+                </div>
+                <div class="folders-grid" id="foldersGrid"></div>
+            </div>
+        </div>
+
+        <!-- FOLDER VIEW -->
+        <div id="folderView" class="view">
+            <div class="folder-header">
+                <div class="folder-header-icon" id="folderIcon">📁</div>
+                <div class="folder-header-info">
+                    <h1 id="folderName">Folder</h1>
+                    <p id="folderDesc">No description</p>
+                </div>
+                <div class="folder-actions">
+                    <button class="btn btn-secondary btn-sm" onclick="showHome()">Back</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteFolder()">Delete</button>
+                </div>
+            </div>
+
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('items')">Items</button>
+                <button class="tab-btn" onclick="switchTab('add')">Add Content</button>
+            </div>
+
+            <!-- ITEMS TAB -->
+            <div id="itemsTab" class="tab-content active">
+                <div class="items-list" id="itemsList"></div>
+                <div class="empty-state" id="emptyState" style="display: none;">
+                    <div class="empty-state-icon">📭</div>
+                    <p>No items yet. Add something!</p>
+                </div>
+            </div>
+
+            <!-- ADD TAB -->
+            <div id="addTab" class="tab-content">
+                <div style="display: grid; gap: 20px;">
+                    <!-- ADD NOTE -->
+                    <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid #e9ecef;">
+                        <h3 style="margin-bottom: 15px;">📝 Add Note</h3>
+                        <textarea id="noteText" placeholder="Write something..."></textarea>
+                        <button class="btn btn-primary" style="width: 100%; margin-top: 10px;" onclick="addNoteToFolder()">Add Note</button>
+                    </div>
+
+                    <!-- ADD LINK -->
+                    <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid #e9ecef;">
+                        <h3 style="margin-bottom: 15px;">🔗 Add Link</h3>
+                        <input type="url" id="linkText" placeholder="https://youtube.com/watch?v=...">
+                        <div id="linkPreview" style="margin-top: 10px; display: none;"></div>
+                        <button class="btn btn-primary" style="width: 100%; margin-top: 10px;" onclick="addLinkToFolder()">Add Link</button>
+                    </div>
+
+                    <!-- UPLOAD FILE -->
+                    <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid #e9ecef;">
+                        <h3 style="margin-bottom: 15px;">📸 Upload Media</h3>
+                        <div class="upload-area" id="folderUploadArea" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                            <div class="upload-icon">📁</div>
+                            <p style="font-weight: 600;">Drop files or click</p>
+                            <input type="file" id="folderFileInput" style="display: none;" onchange="handleFileSelect(event)" multiple accept="image/*,video/*">
+                        </div>
+                        <button class="btn btn-primary" style="width: 100%; margin-top: 10px;" onclick="uploadFilesToFolder()">Upload</button>
+                    </div>
+
+                    <!-- VOICE NOTE -->
+                    <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid #e9ecef;">
+                        <h3 style="margin-bottom: 15px;">🎤 Voice Note</h3>
+                        <button class="btn btn-danger" style="width: 100%;" id="voiceBtn" onclick="toggleVoiceFolder()">🎤 Start Recording</button>
+                        <div id="voiceTranscript" style="margin-top: 10px; display: none;">
+                            <textarea id="voiceText" placeholder="Transcription..."></textarea>
+                            <button class="btn btn-success" style="width: 100%; margin-top: 10px;" onclick="addVoiceNoteToFolder()">Add Voice Note</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODALS -->
+
+    <!-- CREATE FOLDER -->
+    <div id="createFolderModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('createFolderModal')">✕</button>
+            <div class="modal-header">Create Folder</div>
+
+            <div class="form-group">
+                <label>Folder Name</label>
+                <input type="text" id="folderNameInput" placeholder="e.g., Recipes, Animals">
+            </div>
+
+            <div class="form-group">
+                <label>Description</label>
+                <textarea id="folderDescInput" placeholder="What is this for?"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Icon</label>
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+                    <button type="button" style="background: none; border: 2px solid #e9ecef; padding: 15px; border-radius: 8px; font-size: 24px; cursor: pointer;" onclick="selectIcon(this, '🍳')">🍳</button>
+                    <button type="button" style="background: none; border: 2px solid #e9ecef; padding: 15px; border-radius: 8px; font-size: 24px; cursor: pointer;" onclick="selectIcon(this, '🦁')">🦁</button>
+                    <button type="button" style="background: none; border: 2px solid #e9ecef; padding: 15px; border-radius: 8px; font-size: 24px; cursor: pointer;" onclick="selectIcon(this, '📚')">📚</button>
+                    <button type="button" style="background: none; border: 2px solid #e9ecef; padding: 15px; border-radius: 8px; font-size: 24px; cursor: pointer;" onclick="selectIcon(this, '💡')">💡</button>
+                    <button type="button" style="background: none; border: 2px solid #e9ecef; padding: 15px; border-radius: 8px; font-size: 24px; cursor: pointer;" onclick="selectIcon(this, '📺')">📺</button>
+                    <button type="button" style="background: none; border: 2px solid #e9ecef; padding: 15px; border-radius: 8px; font-size: 24px; cursor: pointer;" onclick="selectIcon(this, '⭐')">⭐</button>
+                    <button type="button" style="background: none; border: 2px solid #e9ecef; padding: 15px; border-radius: 8px; font-size: 24px; cursor: pointer;" onclick="selectIcon(this, '🎯')">🎯</button>
+                    <button type="button" style="background: none; border: 2px solid #e9ecef; padding: 15px; border-radius: 8px; font-size: 24px; cursor: pointer;" onclick="selectIcon(this, '💭')">💭</button>
+                </div>
+                <input type="hidden" id="selectedIcon" value="📁">
+            </div>
+
+            <div class="form-group">
+                <label>Color</label>
+                <div class="color-picker">
+                    <div class="color-option selected" style="background: #5b7cfa;" onclick="selectColor(this, '#5b7cfa')"></div>
+                    <div class="color-option" style="background: #51cf66;" onclick="selectColor(this, '#51cf66')"></div>
+                    <div class="color-option" style="background: #ffd43b;" onclick="selectColor(this, '#ffd43b')"></div>
+                    <div class="color-option" style="background: #ff922b;" onclick="selectColor(this, '#ff922b')"></div>
+                    <div class="color-option" style="background: #ff6b6b;" onclick="selectColor(this, '#ff6b6b')"></div>
+                    <div class="color-option" style="background: #a78bfa;" onclick="selectColor(this, '#a78bfa')"></div>
+                </div>
+                <input type="hidden" id="selectedColor" value="#5b7cfa">
+            </div>
+
+            <button class="btn btn-primary" style="width: 100%;" onclick="createFolder()">Create</button>
+        </div>
+    </div>
+
+    <!-- ADD NOTE MODAL -->
+    <div id="addNoteModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('addNoteModal')">✕</button>
+            <div class="modal-header">Add Note</div>
+
+            <div class="form-group">
+                <label>Note</label>
+                <textarea id="modalNoteText" placeholder="Write something..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Folder</label>
+                <select id="folderSelectNote">
+                    <option value="">Choose folder...</option>
+                </select>
+            </div>
+
+            <button class="btn btn-primary" style="width: 100%;" onclick="addNoteFromModal()">Add</button>
+        </div>
+    </div>
+
+    <!-- ADD LINK MODAL -->
+    <div id="addLinkModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('addLinkModal')">✕</button>
+            <div class="modal-header">Add Link</div>
+
+            <div class="form-group">
+                <label>URL</label>
+                <input type="url" id="modalLinkText" placeholder="https://...">
+                <div id="modalLinkPreview" style="margin-top: 10px; display: none;"></div>
+            </div>
+
+            <div class="form-group">
+                <label>Folder</label>
+                <select id="folderSelectLink">
+                    <option value="">Choose folder...</option>
+                </select>
+            </div>
+
+            <button class="btn btn-primary" style="width: 100%;" onclick="addLinkFromModal()">Add</button>
+        </div>
+    </div>
+
+    <!-- UPLOAD MODAL -->
+    <div id="uploadModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('uploadModal')">✕</button>
+            <div class="modal-header">Upload Media</div>
+
+            <div class="form-group">
+                <div class="upload-area" id="uploadArea" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                    <div class="upload-icon">📁</div>
+                    <p style="font-weight: 600;">Drop files or click</p>
+                    <input type="file" id="fileInput" style="display: none;" onchange="handleFileSelect(event)" multiple accept="image/*,video/*">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Folder</label>
+                <select id="folderSelectUpload">
+                    <option value="">Choose folder...</option>
+                </select>
+            </div>
+
+            <button class="btn btn-primary" style="width: 100%;" onclick="uploadFilesFromModal()">Upload</button>
+        </div>
+    </div>
+
+    <!-- VOICE MODAL -->
+    <div id="voiceModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('voiceModal')">✕</button>
+            <div class="modal-header">Voice Note</div>
+
+            <div style="text-align: center; margin-bottom: 20px;">
+                <button class="btn btn-danger" style="width: 100%; padding: 20px; font-size: 16px;" id="voiceModalBtn" onclick="toggleVoiceModal()">🎤 Start Recording</button>
+            </div>
+
+            <div id="voiceModalTranscript" style="margin-top: 20px; display: none;">
+                <label>Transcription</label>
+                <textarea id="voiceModalText" placeholder="Your voice will appear here..."></textarea>
+            </div>
+
+            <div class="form-group" style="margin-top: 20px;">
+                <label>Folder</label>
+                <select id="folderSelectVoice">
+                    <option value="">Choose folder...</option>
+                </select>
+            </div>
+
+            <button class="btn btn-success" style="width: 100%;" onclick="addVoiceNoteFromModal()">Add Voice Note</button>
+        </div>
+    </div>
+
+    <!-- SCRIPT -->
+    <script src="assets/js/app.js"></script>
+</body>
+</html>
