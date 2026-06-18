@@ -3,9 +3,16 @@
   "version": "0.1.0",
   "description": "BrainVault — prototipo client-side",
   "scripts": {
-    "start": "http-server -c-1 ./ -p 8000"
+    "start": "http-server -c-1 ./ -p 8000",
+    "lint:js": "eslint assets/js --ext .js",
+    "lint:css": "stylelint \"assets/css/**/*.css\"",
+    "lint": "npm run lint:js && npm run lint:css"
   },
   "devDependencies": {
-    "http-server": "^14.1.1"
+    "http-server": "^14.1.1",
+    "eslint": "^8.50.0",
+    "stylelint": "^15.16.0",
+    "stylelint-config-recommended": "^10.0.0",
+    "eslint-config-standard": "^17.0.0"
   }
 }
